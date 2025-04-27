@@ -1,0 +1,89 @@
+float V1_sp, V2_sp,  V3_sp,T, delta_xung1,delta_xung2,delta_xung3,V,S,Vtest,vfb1,vfb2,vfb3,vfb,acc;
+float delta_x, delta_y,  alpha,Vin,Vout;
+float  e1_cur, e1_sum,e1_del,  e2_cur, e2_sum,e2_del,  e3_cur, e3_sum,e3_del;
+float V_ph1,V_ph2,V_ph3;
+float Sin;
+T = period/1000000;
+
+
+if(reset == 1)
+{X_sp = X_ph=Y_sp=Y_ph=dem=i1=i0=i2=i3=i4=i5=0;}
+delta_x = X_sp - X_ph;
+delta_y = Y_sp - Y_ph;
+
+S = sqrt(delta_x*delta_x+delta_y*delta_y); 
+Vtest =S/(175*T);
+if(Vtest <37){Vin= Vtest;}
+else {Vin = 37;}
+
+if(dem == size) 
+{duty1=0;duty2=0;duty3=0;
+i5 = i4;}
+else
+{ if(enable==1&&Vtest<=1.5&&vfb<=0.005)
+ i3=i2+1;
+time =i3/1000;
+if(i3>=500)
+{dem++;
+i1=0;i0=0;
+i2=0;i3=0;}
+
+if(delta_x > 0) {alpha = atan(delta_y/delta_x);}
+else if(delta_x<0){ alpha = pi +  atan(delta_y/delta_x);}
+
+
+if(enable == 1)
+{
+i5=i4+1;
+run_time = i5/1000;
+i1 = i0+1;
+if(i1<156){V = 0.25*Vin;}
+else if(i1>156&&i1<311){V =0.75*Vin;}
+else if(i1>311){V=Vin;}
+
+V1_sp = (-sqrt(3)/2*cos(alpha) -0.5*sin(alpha))*V;
+V2_sp = (sqrt(3)/2*cos(alpha) - 0.5*sin(alpha))*V;
+ V3_sp = V*sin(alpha); 
+
+
+if ( V1_sp>=0)  { a1=0;}
+else  if (V1_sp<0) {a1=1; V1_sp=abs(V1_sp);}
+if ( V2_sp>=0)  {a2=0;}
+else  if (V2_sp<0) {a2=1; V2_sp=abs(V2_sp);}
+if (V3_sp >=0)  {a3=0;}
+else  if (V3_sp<0) {a3=1; V3_sp=abs(V3_sp);}
+
+delta_xung1= xung_cur1- xung_pre1;
+delta_xung2=xung_cur2- xung_pre2;
+delta_xung3=xung_cur3- xung_pre3; 
+
+V_ph1=(abs(delta_xung1)*2*pi*6.5)/(54000*T);
+V_ph2=(abs(delta_xung2)*2*pi*6.5)/(54000*T);
+V_ph3=(abs(delta_xung3)*2*pi*6.5)/(54000*T);
+
+e1_k =abs(V1_sp) - abs(V_ph1);
+duty1 = Kp*(e1_k - e1_k_1) + Ki*T*e1_k_1 + duty1_1;
+
+e2_k = abs(V2_sp) - abs(V_ph2);
+duty2 = Kp*(e2_k - e2_k_1) + Ki*T*e2_k_1 + duty2_1;
+
+e3_k = abs(V3_sp) - abs(V_ph3);
+duty3 = Kp*(e3_k - e3_k_1) + Ki*T*e3_k_1 + duty3_1;
+
+if(duty1 >= 0.99) duty1 = 0.99;
+else if(duty1 <= 0) duty1 =0;
+else duty1 =duty1;
+if(duty2 >= 0.99) duty2 = 0.99;
+else if(duty2 <= 0) duty2 =0;
+else duty1 =duty1;
+if(duty3 >= 0.99) duty3 = 0.99;
+else if(duty3 <= 0) duty3 =0;
+else duty3 =duty3;
+
+vfb1=(delta_xung1)*2*pi*6.5/(54000*T);
+vfb2=(delta_xung2)*2*pi*6.5/(54000*T);
+vfb3=(delta_xung3)*2*pi*6.5/(54000*T);
+vfb = sqrt(1/3*(vfb1-vfb2)*(vfb1-vfb2)+vfb3*vfb3);
+acc = sqrt(ax*ax+ay*ay);
+}
+}
