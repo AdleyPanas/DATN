@@ -3,7 +3,7 @@
 git init 
 git remote add origin https:...
 
-git add .
+git add ./
 git commit -m"abc"
 git branch -M codepython
 git pull origin codepython --rebase
